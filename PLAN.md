@@ -2,14 +2,18 @@
 
 > **For Hermes:** Execute tasks autonomously via delegate_task per workstream. Tasks in each phase should be executed sequentially (next depends on previous). Phases can proceed in parallel where noted.
 
-**Goal:** Maximize kiosk responsiveness and stability on the Jetson Nano 2GB (v3 OC kernel, 2.014 GHz, fbdev Xorg, SwiftShader Chromium) by reducing memory pressure and tuning system parameters, then optionally overclocking EMC/RAM and GPU.
+**Goal:** Maximize kiosk responsiveness and stability on the Jetson Nano 2GB (custom OC kernel, 2.014 GHz, **full NVIDIA GPU acceleration**).
 
-**Current State (June 16, 2026):**
+**Current State (June 17, 2026):**
 - Kernel: `4.9.337-tegra` (custom build, GCC 16, MODVERSIONS=n, tegra-udrm built-in)
 - CPU: 2.014 GHz (performance governor, systemd service enabled)
-- Display: 2560×1080 fbdev Xorg + Chromium SwiftShader software rendering
-- RAM: 2 GB LPDDR4 — this is the critical bottleneck
-- Storage: eMMC boot — swap on eMMC is slow
+- GPU: **nvgpu.ko rebuilt from GPLv2 source** — full acceleration
+- Display: 2560×1080 **Xorg NVIDIA driver** — HW 2D accel + GLX
+- Browser: Chromium 112 — **NVIDIA GLX hardware rendering** (separate GPU process)
+- RAM: 2 GB LPDDR4
+- Memory used (kiosk idle): **~510 MB** (was 851 MB with SwiftShader)
+- CPU load (kiosk idle): **~0.25** (was 3.87 with SwiftShader)
+- Storage: eMMC boot, ZRAM 1 GB (lzo) swap
 
 **Key Constraint:** The 2GB Nano has no barrel jack power — micro-USB only (5V/2.5A stock, 5V/3A+ recommended). EMC overclocking increases power draw. Do NOT proceed with EMC OC unless the power supply can handle it.
 
