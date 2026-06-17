@@ -1,0 +1,1 @@
+%kiosk ALL=(ALL) NOPASSWD: /sbin/reboot, /sbin/shutdown, /usr/bin/tee /sys/devices/system/cpu/cpufreq/policy0/scaling_governor, /usr/bin/tee /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq, /usr/bin/tee /sys/devices/57000000.gpu/devfreq/57000000.gpu/max_freq, /bin/systemctl, /usr/bin/pkill, /sbin/modprobe

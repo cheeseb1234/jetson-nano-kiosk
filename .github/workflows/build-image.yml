@@ -1,0 +1,56 @@
+name: Build Flashable Image
+on:
+  workflow_dispatch:    # manual trigger
+  push:
+    tags: ['v*']       # automated on version tags
+
+jobs:
+  build-image:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget xz-utils qemu-user-static
+
+      - name: Build flashable image
+        run: |
+          cd build
+          chmod +x build-image.sh
+          sudo mkdir -p output l4t
+          sudo ./build-image.sh "$(pwd)/output" "$(pwd)/l4t"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jetson-nano-kiosk-image
+          path: build/output/*.xz
+          retention-days: 30
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/output/*.xz
+          body: |
+            ## Jetson Nano Kiosk Flashable Image
+            
+            - L4T ${{ env.L4T_VERSION || '32.7.6' }}
+            - CPU: 2.014 GHz OC + performance governor
+            - GPU: Full acceleration (nvgpu rebuilt from source)
+            - Display: Xorg NVIDIA driver with HW GLX
+            
+            ### Flashing
+            ```
+            xzcat jetson-nano-kiosk-r32.7.6.img.xz | sudo dd of=/dev/sdX bs=4M status=progress
+            ```
+            
+            Insert SD into Jetson Nano 2GB, connect HDMI + power.
+            First boot takes ~2 minutes to resize rootfs.

@@ -1,0 +1,11 @@
+[Unit]
+Description=Set Jetson overclock governor to performance
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor && echo 2014500 > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq'
+ExecStart=/bin/sh -c 'echo 1000000000 > /sys/devices/57000000.gpu/devfreq/57000000.gpu/max_freq 2>/dev/null || true'
+
+[Install]
+WantedBy=multi-user.target

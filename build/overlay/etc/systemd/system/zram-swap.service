@@ -1,0 +1,17 @@
+[Unit]
+Description=ZRAM compressed swap (1 GB)
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/sbin/modprobe -r zram
+ExecStartPre=/sbin/modprobe zram num_devices=1
+ExecStart=/bin/bash -c 'echo 1073741824 > /sys/block/zram0/disksize'
+ExecStart=/sbin/mkswap /dev/zram0
+ExecStart=/sbin/swapon -p 100 /dev/zram0
+ExecStop=/sbin/swapoff /dev/zram0
+ExecStop=/bin/bash -c 'echo 1 > /sys/block/zram0/reset'
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

@@ -37,6 +37,24 @@ Custom overclocked kernel and optimized kiosk for HomeBox scanner on Jetson Nano
 - **GPU:** None → Full acceleration with NVIDIA GLX
 - **Memory used:** 851 → 510 MB (-40%)
 - **CPU load under kiosk:** 3.87 → 0.25 (-93%)
+- **Swap:** Eliminated
+- **Storage:** eMMC boot, ZRAM 1 GB (lzo) swap
+
+## Flashable Image
+
+A build script for creating a complete SD card image is in the `build/` directory:
+
+```
+build/
+├── build-image.sh          # Builds a flashable SD card image from L4T BSP
+├── kernel/                 # Pre-built kernel artifacts (Image, DTB, nvgpu.ko)
+├── overlay/                # Config files applied to the image
+└── .github/workflows/      # CI workflow for automated image building
+```
+
+To build: `sudo ./build/build-image.sh`
+
+Output: compressed `.img.xz` ready to `dd` to an SD card.
 
 ## Repository Contents
 - `PLAN.md` — full optimization plan

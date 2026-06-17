@@ -1,0 +1,3 @@
+# Large kernel build artifacts — track via Git LFS
+build/kernel/Image filter=lfs diff=lfs merge=lfs -text
+build/kernel/nvgpu.ko filter=lfs diff=lfs merge=lfs -text
