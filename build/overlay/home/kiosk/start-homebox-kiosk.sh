@@ -17,34 +17,45 @@ xset s off || true
 xset -dpms || true
 xset s noblank || true
 
+
 until getent hosts homebox.home.arpa >/dev/null 2>&1; do
+  echo "Waiting for homebox.home.arpa to resolve..."
   sleep 2
 done
 
 until curl -k --connect-timeout 3 -Is "$KIOSK_URL" >/dev/null 2>&1; do
+  echo "Waiting for HomeBox field URL..."
   sleep 3
 done
 
-# Determine which browser to use
-CHROME=chromium-browser
-type "$CHROME" >/dev/null 2>&1 || CHROME=chromium
-type "$CHROME" >/dev/null 2>&1 || CHROME=google-chrome
+if command -v chromium-browser >/dev/null 2>&1; then
+  CHROME=chromium-browser
+elif command -v chromium >/dev/null 2>&1; then
+  CHROME=chromium
+elif command -v google-chrome >/dev/null 2>&1; then
+  CHROME=google-chrome
+else
+  echo "ERROR: no Chromium/Chrome executable found" >&2
+  exit 1
+fi
 
-# Kill leftover crashpad
+# Kill any existing chrome_crashpad processes to free RAM
 pkill -f chrome_crashpad 2>/dev/null || true
 
 while true; do
   if [ -f /tmp/kiosk-switch-to-desktop ]; then
+    echo "Desktop switch requested - exiting kiosk loop"
     rm -f /tmp/kiosk-switch-to-desktop
     exit 0
   fi
 
   "$CHROME" \
+    "$KIOSK_URL" \
     --kiosk \
     --noerrdialogs \
     --disable-session-crashed-bubble \
     --overscroll-history-navigation=0 \
-    --user-data-dir=/home/kiosk/.config/chromium-kiosk \
+    --user-data-dir="/home/${KIOSK_USER}/.config/chromium-kiosk" \
     --max_old_space_size=512 \
     --disable-sync \
     --disable-background-networking \
@@ -57,7 +68,12 @@ while true; do
     --renderer-process-limit=1 \
     --disable-ipc-flooding-protection \
     --disable-field-trial-config \
-    "$KIOSK_URL"
+    --enable-gpu-rasterization \
+    --enable-zero-copy \
+    --ignore-gpu-blocklist \
+    --num-raster-threads=4 \
+    --enable-oop-rasterization \
+    --disable-gpu-vsync \
 
   sleep 5
 done
